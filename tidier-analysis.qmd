@@ -1,0 +1,72 @@
+---
+title: "Can I make my every-day analysis tidier?"
+author: "Mark Dunning"
+format: revealjs
+editor: visual
+---
+
+## Tidy analysis in R
+
+-   Packages such as `dplyr` and `ggplot2` are fantastic for data manipulation and visualization
+
+-   They are part of a wider collection of packages known as the "tidyverse"
+
+    ![](tidyverse.PNG)
+
+## Tidy analysis in R
+
+Both `dplyr` and `ggplot2` rely on a concept known as tidy data
+
+-   Each row is an observation
+-   Each column is a different variable
+
+```{r message=FALSE,warning=FALSE,echo=TRUE}
+if(!require(palmerpenguins)) install.packages("palmerpenguins")
+library(tidyverse)
+library(palmerpenguins)
+penguins
+```
+
+## Tidy analysis in R
+
+ggplot2 offers a flexible plotting system
+
+```{r message=FALSE,warning=FALSE,echo=TRUE}
+
+ggplot(penguins, aes(x = bill_length_mm,
+                     y = bill_depth_mm,col=species)) + geom_point() 
+```
+
+## Tidy analysis in R
+
+Can quickly calculate summary statistics from subsets of your data
+
+```{r echo = TRUE}
+penguins %>% 
+  group_by(species) %>% 
+  summarise_all(mean,na.rm=TRUE) %>% 
+  select(-island, -sex,-year)
+
+```
+ 
+
+
+## What if your data are not tidy?
+
+
+
+```{r echo = TRUE}
+
+```
+
+## What if your data are not tidy?
+
+```{r echo = TRUE}
+
+
+```
+
+```{r}
+
+```
+
