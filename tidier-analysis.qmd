@@ -49,6 +49,26 @@ penguins %>%
 
 ```
  
+## How about stats?
+
+```{r echo=FALSE}
+filter(penguins, species != "Adelie") %>% 
+ggplot(aes(x = species,
+                     y = bill_depth_mm)) + geom_boxplot() +           geom_jitter(width=0.1)
+```
+
+## Stats in "base" R
+
+```{r}
+penguins_test <- filter(penguins, species != "Adelie")
+t.test(bill_depth_mm ~ species, penguins_test)
+```
+
+## 
+
+```{r}
+
+```
 
 
 ## What if your data are not tidy?
