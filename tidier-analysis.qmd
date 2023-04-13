@@ -19,13 +19,20 @@ Both `dplyr` and `ggplot2` rely on a concept known as tidy data
 
 -   Each row is an observation
 -   Each column is a different variable
+- e.g using `palmerpenguins`
 
 ```{r message=FALSE,warning=FALSE,echo=TRUE}
 if(!require(palmerpenguins)) install.packages("palmerpenguins")
 library(tidyverse)
 library(palmerpenguins)
+```
+
+## Tidy analysis in R
+
+```{r}
 penguins
 ```
+
 
 ## Tidy analysis in R
 
@@ -48,7 +55,7 @@ penguins %>%
   select(-island, -sex,-year)
 
 ```
- 
+
 ## How about stats?
 
 ```{r echo=FALSE}
@@ -64,29 +71,47 @@ penguins_test <- filter(penguins, species != "Adelie")
 t.test(bill_depth_mm ~ species, penguins_test)
 ```
 
-## 
+## Stats in "base R"
+
+- Have to do some work to get the p-value
+- Which we could then display on the plot with some work
 
 ```{r}
+res <- t.test(bill_depth_mm ~ species, penguins_test)
+names(res)
+res$p.value
+```
+## Use of add-on packages: ggpubr
 
+- The `ggpubr` package can automatically add p-values to a plot
+
+```{r}
+library(ggpubr)
+filter(penguins, species != "Adelie") %>% 
+ggplot(aes(x = species,
+                     y = bill_depth_mm)) + geom_boxplot() +           geom_jitter(width=0.1) + 
+  stat_compare_means(method = "t.test")
+```
+## Performing multiple comparisons
+
+```{r echo = TRUE}
+my_comparisons <- list(c("Adelie","Gentoo"),c("Adelie","Chinstrap"),c("Chinstrap","Gentoo"))
+penguins %>% 
+ggplot(aes(x = species,
+                     y = bill_depth_mm)) + geom_boxplot() +           geom_jitter(width=0.1) + 
+  stat_compare_means(comparisons = my_comparisons)
 ```
 
-
-## What if your data are not tidy?
+## Pipe-friendly statistics: rstatix
 
 
 
 ```{r echo = TRUE}
-
-```
-
-## What if your data are not tidy?
-
-```{r echo = TRUE}
-
-
-```
+library(rstatix)
+penguins %>% 
+  t_test(bill_depth_mm ~ species) 
+``` 
 
 ```{r}
 
 ```
-
