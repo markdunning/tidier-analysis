@@ -19,7 +19,7 @@ Both `dplyr` and `ggplot2` rely on a concept known as tidy data
 
 -   Each row is an observation
 -   Each column is a different variable
-- e.g using `palmerpenguins`
+-   e.g using `palmerpenguins`
 
 ```{r message=FALSE,warning=FALSE,echo=TRUE}
 if(!require(palmerpenguins)) install.packages("palmerpenguins")
@@ -32,7 +32,6 @@ library(palmerpenguins)
 ```{r}
 penguins
 ```
-
 
 ## Tidy analysis in R
 
@@ -56,6 +55,124 @@ penguins %>%
 
 ```
 
+
+## RNA-seq analysis in R
+
+Bioconductor has for a long-term support for RNA-seq (and microarray)
+
+- object types such as SummarizedExperiment
+- packages such as `DESeq2` and `edgeR`
+
+
+```{r echo = TRUE}
+library(airway)
+data("airway")
+airway
+```
+
+
+## Subsetting samples / genes
+
+- selecting samples not treated by "dex" 
+
+```{r eval=FALSE,echo=TRUE}
+airway %>% 
+  select(dex == "untrt")
+
+```
+
+
+## Subsetting samples / genes
+
+- retrieving the counts for a particular gene
+
+```{r eval=FALSE,echo=TRUE}
+airway %>% 
+  filter(Gene == "GENE_OF_INTEREST")
+
+```
+
+
+## Why doesn't that work
+
+- tidyverse only works on data frame objects
+- RNA-seq data are typically stored in *long* rather than *wide* objects
+  - rows and genes, columns as samples
+
+## tidybulk and tidySummarizedExperiment
+
+- two packages are required to make RNA-seq compatible with tidy workflows
+- loading `tidySummarizedExperiment` automatically gives access to `tidyverse` functions with no changes requried
+
+```{r echo=TRUE}
+if(!require(tidybulk)) BiocManager::install("tidybulk")
+if(!require(tidySummarizedExperiment)) BiocManager::install("tidySummarizedExperiment")
+library(tidySummarizedExperiment)
+
+airway %>% filter(dex == "untrt")
+```
+
+
+## Calculating library size
+
+```{r echo=TRUE}
+airway %>% group_by(.sample) %>%  summarize(LibSize = sum(counts))
+## colSums(dds) %>% data.frame() %>% 
+
+```
+
+
+## Plotting a gene of interest
+
+```{r echo=TRUE}
+airway %>% 
+  filter(.feature == "ENSG00000000003") %>% 
+  ggplot(aes(x = dex, y = counts)) + geom_boxplot()
+## plotCounts(dds, "ENSG00000000003",returnData = TRUE) %>% ggplot  
+```
+
+## PCA plots
+
+- Remove non-expressed genes first
+- Scale the counts (TMM by default)
+- Do PCA (options for MDS, tSNE, or UMAP)
+
+```{r echo=TRUE}
+counts_filtered <- airway %>% keep_abundant(factor_of_interest = dex)
+counts_scaled <- airway %>% scale_abundance()
+
+counts_scal_PCA <-
+  counts_scaled %>%
+  reduce_dimensions(method = "PCA")
+counts_scal_PCA
+```
+
+
+## Make the PCA plot
+
+```{r echo=TRUE}
+counts_scal_PCA %>%
+  pivot_sample() %>%
+  ggplot(aes(x = PC1, y = PC2, colour = dex, shape = cell)) +
+  geom_point() 
+```
+
+## Differential expression
+
+- the `test_differential_abundance` function allows different methods of testing (`DESeq2`, `edgeR`, `voom`)
+- specify your design using the `~` syntax
+- can specify particular contrasts (looks like you can have multiple contrasts)
+- could use for plotting, export tables etc
+- easily switch between different statistical methods
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+airway %>% 
+  test_differential_abundance(~dex, method = "deseq2",.contrasts =list(c("dex", "trt", "untrt"))) %>% 
+  pivot_transcript()  %>% 
+  select(feature, contains("log2FoldChange"),contains("padj")) %>% arrange_at(ncol(.))
+```
+
+
 ## How about stats?
 
 ```{r echo=FALSE}
@@ -73,17 +190,18 @@ t.test(bill_depth_mm ~ species, penguins_test)
 
 ## Stats in "base R"
 
-- Have to do some work to get the p-value
-- Which we could then display on the plot with some work
+-   Have to do some work to get the p-value
+-   Which we could then display on the plot with some work
 
 ```{r}
 res <- t.test(bill_depth_mm ~ species, penguins_test)
 names(res)
 res$p.value
 ```
+
 ## Use of add-on packages: ggpubr
 
-- The `ggpubr` package can automatically add p-values to a plot
+-   The `ggpubr` package can automatically add p-values to a plot
 
 ```{r}
 library(ggpubr)
@@ -92,6 +210,7 @@ ggplot(aes(x = species,
                      y = bill_depth_mm)) + geom_boxplot() +           geom_jitter(width=0.1) + 
   stat_compare_means(method = "t.test")
 ```
+
 ## Performing multiple comparisons
 
 ```{r echo = TRUE}
@@ -104,13 +223,11 @@ ggplot(aes(x = species,
 
 ## Pipe-friendly statistics: rstatix
 
-
-
 ```{r echo = TRUE}
 library(rstatix)
 penguins %>% 
   t_test(bill_depth_mm ~ species) 
-``` 
+```
 
 ```{r}
 
