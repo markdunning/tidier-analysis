@@ -65,6 +65,7 @@ Bioconductor has for a long-term support for RNA-seq (and microarray)
 
 
 ```{r echo = TRUE}
+if(!require("airway")) BiocManager::install("airway")
 library(airway)
 data("airway")
 airway
@@ -175,6 +176,9 @@ airway %>%
 
 ## How about stats?
 
+- We know that `ggplot2` can visually compare distributions
+- Often we want to put the p-value on the plot too
+
 ```{r echo=FALSE}
 filter(penguins, species != "Adelie") %>% 
 ggplot(aes(x = species,
@@ -183,17 +187,19 @@ ggplot(aes(x = species,
 
 ## Stats in "base" R
 
-```{r}
+- `t.test` is the standard function that we use for testing R
+
+```{r echo = TRUE}
 penguins_test <- filter(penguins, species != "Adelie")
 t.test(bill_depth_mm ~ species, penguins_test)
 ```
 
 ## Stats in "base R"
 
--   Have to do some work to get the p-value
--   Which we could then display on the plot with some work
+- Have to do some work to get the p-value
+- Which we could then display on the plot with some work
 
-```{r}
+```{r echo = TRUE}
 res <- t.test(bill_depth_mm ~ species, penguins_test)
 names(res)
 res$p.value
@@ -201,9 +207,10 @@ res$p.value
 
 ## Use of add-on packages: ggpubr
 
--   The `ggpubr` package can automatically add p-values to a plot
+- The `ggpubr` package can automatically add p-values to a plot
 
-```{r}
+```{r echo = TRUE}
+if(!require("ggpubr")) install.packages("ggpubr")
 library(ggpubr)
 filter(penguins, species != "Adelie") %>% 
 ggplot(aes(x = species,
@@ -217,18 +224,25 @@ ggplot(aes(x = species,
 my_comparisons <- list(c("Adelie","Gentoo"),c("Adelie","Chinstrap"),c("Chinstrap","Gentoo"))
 penguins %>% 
 ggplot(aes(x = species,
-                     y = bill_depth_mm)) + geom_boxplot() +           geom_jitter(width=0.1) + 
+                     y = bill_depth_mm)) + 
+  geom_boxplot() +           
+  geom_jitter(width=0.1) + 
   stat_compare_means(comparisons = my_comparisons)
 ```
 
 ## Pipe-friendly statistics: rstatix
 
 ```{r echo = TRUE}
+if(!require("rstatix")) install.packages("rstatix")
 library(rstatix)
 penguins %>% 
   t_test(bill_depth_mm ~ species) 
 ```
+## Conclustions
 
-```{r}
-
-```
+- tidy principles can now be applied to RNA-seq data
+- workflows can be achieved using set of "verbs"
+- easier for learners?
+- is it time to update materials?
+- useful reference
+  + https://stemangiola.github.io/rladiestunis2021_tidytranscriptomics/articles/tidytranscriptomics.html
