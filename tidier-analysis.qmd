@@ -64,7 +64,7 @@ Bioconductor has for a long-term support for RNA-seq (and microarray)
 - packages such as `DESeq2` and `edgeR`
 
 
-```{r echo = TRUE}
+```{r echo = TRUE, message=FALSE,warning=FALSE} 
 if(!require("airway")) BiocManager::install("airway")
 library(airway)
 data("airway")
@@ -105,7 +105,7 @@ airway %>%
 - two packages are required to make RNA-seq compatible with tidy workflows
 - loading `tidySummarizedExperiment` automatically gives access to `tidyverse` functions with no changes requried
 
-```{r echo=TRUE}
+```{r echo=TRUE, message=FALSE,warning=FALSE}
 if(!require(tidybulk)) BiocManager::install("tidybulk")
 if(!require(tidySummarizedExperiment)) BiocManager::install("tidySummarizedExperiment")
 library(tidySummarizedExperiment)
