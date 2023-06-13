@@ -45,7 +45,8 @@ ggplot(penguins, aes(x = bill_length_mm,
 
 ## Tidy analysis in R
 
-Can quickly calculate summary statistics from subsets of your data
+- Can quickly calculate summary statistics from subsets of your data
+- The pipe operator %>% allows operations to be chained into a workflow
 
 ```{r echo = TRUE}
 penguins %>% 
@@ -69,6 +70,9 @@ if(!require("airway")) BiocManager::install("airway")
 library(airway)
 data("airway")
 airway
+#assay(airway)
+#colData(airway)
+
 ```
 
 
@@ -78,7 +82,7 @@ airway
 
 ```{r eval=FALSE,echo=TRUE}
 airway %>% 
-  select(dex == "untrt")
+  filter(dex == "untrt")
 
 ```
 
@@ -97,7 +101,7 @@ airway %>%
 ## Why doesn't that work
 
 - tidyverse only works on data frame objects
-- RNA-seq data are typically stored in *long* rather than *wide* objects
+- RNA-seq data are typically stored in *wide* rather than *long* objects
   - rows and genes, columns as samples
 
 ## tidybulk and tidySummarizedExperiment
@@ -111,6 +115,9 @@ if(!require(tidySummarizedExperiment)) BiocManager::install("tidySummarizedExper
 library(tidySummarizedExperiment)
 
 airway %>% filter(dex == "untrt")
+
+## airway <- airway[,airway$dex == "untrt"]
+
 ```
 
 
@@ -129,7 +136,9 @@ airway %>% group_by(.sample) %>%  summarize(LibSize = sum(counts))
 airway %>% 
   filter(.feature == "ENSG00000000003") %>% 
   ggplot(aes(x = dex, y = counts)) + geom_boxplot()
-## plotCounts(dds, "ENSG00000000003",returnData = TRUE) %>% ggplot  
+## plotCounts(dds, "ENSG00000000003",returnData = TRUE) %>% ggplot(....)
+## counts(dds) %>% data.frame %>% tibble::rownames_to_column("GENE") %>% filter(GENE == "ENSG00000000003")
+
 ```
 
 ## PCA plots
@@ -139,6 +148,7 @@ airway %>%
 - Do PCA (options for MDS, tSNE, or UMAP)
 
 ```{r echo=TRUE}
+library(tidybulk)
 counts_filtered <- airway %>% keep_abundant(factor_of_interest = dex)
 counts_scaled <- airway %>% scale_abundance()
 
@@ -146,6 +156,9 @@ counts_scal_PCA <-
   counts_scaled %>%
   reduce_dimensions(method = "PCA")
 counts_scal_PCA
+
+## vsd <- vst(dds);plotPCA(vsd,returnData = TRUE)
+
 ```
 
 
@@ -238,7 +251,7 @@ library(rstatix)
 penguins %>% 
   t_test(bill_depth_mm ~ species) 
 ```
-## Conclustions
+## Conclusions
 
 - tidy principles can now be applied to RNA-seq data
 - workflows can be achieved using set of "verbs"
